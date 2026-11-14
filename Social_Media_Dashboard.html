@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Social Media Intelligence Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f4f6fa;
+    --surface: #ffffff;
+    --text: #1c2333;
+    --muted: #6a7286;
+    --border: #e2e6ee;
+    --accent: #2563eb;
+    --accent-2: #0d9488;
+    --accent-3: #d97706;
+    --danger: #dc2626;
+    --chip: #eef2ff;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1320;
+      --surface: #161d2c;
+      --text: #e6eaf2;
+      --muted: #98a2b6;
+      --border: #26304a;
+      --accent: #60a5fa;
+      --accent-2: #2dd4bf;
+      --accent-3: #fbbf24;
+      --danger: #f87171;
+      --chip: #1e2740;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1320;
+    --surface: #161d2c;
+    --text: #e6eaf2;
+    --muted: #98a2b6;
+    --border: #26304a;
+    --accent: #60a5fa;
+    --accent-2: #2dd4bf;
+    --accent-3: #fbbf24;
+    --danger: #f87171;
+    --chip: #1e2740;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 20px 20px 48px; }
+  header h1 { font-size: 24px; margin: 0 0 2px; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+
+  nav.tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 20px; flex-wrap: wrap; }
+  nav.tabs button {
+    background: none; border: none; color: var(--muted);
+    padding: 10px 14px; font-size: 14px; font-weight: 600; cursor: pointer;
+    border-bottom: 3px solid transparent; margin-bottom: -1px;
+  }
+  nav.tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-head { margin-bottom: 14px; }
+  .page-head h2 { font-size: 20px; margin: 0 0 2px; }
+  .purpose { color: var(--muted); margin: 0; }
+
+  .slicers { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0 18px; align-items: center; }
+  .slicers .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; margin-right: 4px; }
+  .slicer {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 12px; font-size: 13px; color: var(--text);
+  }
+  .slicer span { color: var(--muted); margin-right: 6px; }
+  .preview-note { color: var(--muted); font-size: 12px; margin: -6px 0 16px; }
+
+  .kpis { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 18px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+  }
+  .kpi-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi-value { font-size: 26px; font-weight: 700; margin: 4px 0 2px; }
+  .kpi-hint { color: var(--muted); font-size: 12px; }
+  .pos { color: var(--accent-2); }
+
+  .charts { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+  .card h3 { font-size: 15px; margin: 0 0 2px; }
+  .card .note { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
+  .chart-box { position: relative; height: 280px; }
+  .full { grid-column: 1 / -1; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  th.left, td.left { text-align: left; }
+  tr:last-child td { border-bottom: none; }
+
+  footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
+
+  @media (max-width: 760px) {
+    .charts { grid-template-columns: 1fr; }
+    .chart-box { height: 240px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>📊 Social Media Intelligence Platform</h1>
+  <p class="sub">Jan 2024 to Dec 2025 · 12 creator accounts · 1,200 posts · 30 campaigns</p>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-page="p1">Executive Overview</button>
+  <button data-page="p2">Content Performance</button>
+  <button data-page="p3">Audience &amp; Campaigns</button>
+  <button data-page="p4">Insights &amp; Recommendations</button>
+</nav>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page active" id="p1">
+  <div class="page-head">
+    <h2>Executive Overview</h2>
+    <p class="purpose">Quick view of overall social media performance.</p>
+  </div>
+  <div class="slicers">
+    <span class="label">Slicers</span>
+    <div class="slicer"><span>Year</span>2024 · 2025 (all)</div>
+    <div class="slicer"><span>Platform</span>LinkedIn · YouTube · Instagram (all)</div>
+  </div>
+  <p class="preview-note">Filters shown as a preview. Interactive filtering happens in Power BI.</p>
+
+  <div class="kpis">
+    <div class="card"><div class="kpi-label">Total Posts</div><div class="kpi-value">1,200</div><div class="kpi-hint">3 platforms</div></div>
+    <div class="card"><div class="kpi-label">Total Reach</div><div class="kpi-value">60.0M</div><div class="kpi-hint">59,973,291</div></div>
+    <div class="card"><div class="kpi-label">Total Engagement</div><div class="kpi-value">6.67M</div><div class="kpi-hint">6,669,843</div></div>
+    <div class="card"><div class="kpi-label">Avg Engagement Rate</div><div class="kpi-value">11.08%</div><div class="kpi-hint">Average of post rates</div></div>
+    <div class="card"><div class="kpi-label">Net Follower Growth</div><div class="kpi-value pos">+130,829</div><div class="kpi-hint">174,357 gained · 43,528 lost</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="card full">
+      <h3>Social Media Performance Trend</h3>
+      <p class="note">Total Reach and Total Engagement by month (Dim_Date[Month Year])</p>
+      <div class="chart-box"><canvas id="p1Trend"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Performance by Platform</h3>
+      <p class="note">Total Reach by platform</p>
+      <div class="chart-box"><canvas id="p1Platform"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Engagement by Content Type</h3>
+      <p class="note">Total Engagement by content type</p>
+      <div class="chart-box"><canvas id="p1ContentType"></canvas></div>
+    </div>
+    <div class="card full">
+      <h3>Audience Growth Trend</h3>
+      <p class="note">Net Follower Growth by month</p>
+      <div class="chart-box"><canvas id="p1Growth"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" id="p2">
+  <div class="page-head">
+    <h2>Content Performance Analysis</h2>
+    <p class="purpose">Which content performs best and why.</p>
+  </div>
+  <div class="slicers">
+    <span class="label">Slicers</span>
+    <div class="slicer"><span>Content Type</span>All</div>
+    <div class="slicer"><span>Topic</span>All</div>
+    <div class="slicer"><span>Platform</span>All</div>
+    <div class="slicer"><span>Date</span>Jan 2024 – Dec 2025</div>
+  </div>
+  <p class="preview-note">Filters shown as a preview. Interactive filtering happens in Power BI.</p>
+
+  <div class="kpis">
+    <div class="card"><div class="kpi-label">Average Reach per Post</div><div class="kpi-value">49,978</div><div class="kpi-hint">Total reach ÷ posts</div></div>
+    <div class="card"><div class="kpi-label">Average Engagement per Post</div><div class="kpi-value">5,558</div><div class="kpi-hint">Total engagement ÷ posts</div></div>
+    <div class="card"><div class="kpi-label">Total Impressions</div><div class="kpi-value">97.7M</div><div class="kpi-hint">97,655,256</div></div>
+    <div class="card"><div class="kpi-label">Total Clicks</div><div class="kpi-value">1.56M</div><div class="kpi-hint">1,556,259</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="card">
+      <h3>Reach by Content Type</h3>
+      <p class="note">Which format reaches the most people</p>
+      <div class="chart-box"><canvas id="p2Reach"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Engagement by Content Type</h3>
+      <p class="note">Total Engagement by format</p>
+      <div class="chart-box"><canvas id="p2Engagement"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Performance by Topic</h3>
+      <p class="note">Total Engagement by topic</p>
+      <div class="chart-box"><canvas id="p2Topic"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Engagement per Post Over Time</h3>
+      <p class="note">Average engagement per post by month, so quality is separated from volume</p>
+      <div class="chart-box"><canvas id="p2Quality"></canvas></div>
+    </div>
+    <div class="card full">
+      <h3>Top 10 Posts by Total Engagement</h3>
+      <p class="note">Top 10 filter applied on Total Engagement</p>
+      <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th class="left">Post</th><th class="left">Content Type</th><th class="left">Topic</th><th class="left">Platform</th><th>Total Reach</th><th>Total Engagement</th><th>Avg Engagement Rate</th></tr></thead>
+        <tbody>
+          <tr><td class="left">POST00542</td><td class="left">Video</td><td class="left">Finance</td><td class="left">YouTube</td><td>94,744</td><td>17,360</td><td>18.32%</td></tr>
+          <tr><td class="left">POST00608</td><td class="left">Reel</td><td class="left">Productivity</td><td class="left">YouTube</td><td>97,982</td><td>16,776</td><td>17.12%</td></tr>
+          <tr><td class="left">POST00284</td><td class="left">Image</td><td class="left">Career</td><td class="left">LinkedIn</td><td>93,625</td><td>16,706</td><td>17.84%</td></tr>
+          <tr><td class="left">POST00396</td><td class="left">Carousel</td><td class="left">Career</td><td class="left">Instagram</td><td>97,469</td><td>16,066</td><td>16.48%</td></tr>
+          <tr><td class="left">POST00886</td><td class="left">Image</td><td class="left">Finance</td><td class="left">LinkedIn</td><td>90,953</td><td>16,332</td><td>17.96%</td></tr>
+          <tr><td class="left">POST01017</td><td class="left">Reel</td><td class="left">Data Analytics</td><td class="left">YouTube</td><td>99,197</td><td>16,184</td><td>16.32%</td></tr>
+          <tr><td class="left">POST00247</td><td class="left">Reel</td><td class="left">Career</td><td class="left">Instagram</td><td>93,750</td><td>16,177</td><td>17.26%</td></tr>
+          <tr><td class="left">POST00826</td><td class="left">Carousel</td><td class="left">AI</td><td class="left">Instagram</td><td>90,614</td><td>15,981</td><td>17.64%</td></tr>
+          <tr><td class="left">POST00442</td><td class="left">Text</td><td class="left">Career</td><td class="left">Instagram</td><td>88,242</td><td>15,947</td><td>18.07%</td></tr>
+          <tr><td class="left">POST00927</td><td class="left">Text</td><td class="left">Productivity</td><td class="left">Instagram</td><td>98,578</td><td>15,698</td><td>15.92%</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" id="p3">
+  <div class="page-head">
+    <h2>Audience &amp; Campaign Insights</h2>
+    <p class="purpose">How the audience is growing and where campaign investment goes.</p>
+  </div>
+  <div class="slicers">
+    <span class="label">Slicers</span>
+    <div class="slicer"><span>Date</span>Jan 2024 – Dec 2025</div>
+    <div class="slicer"><span>Platform</span>All</div>
+    <div class="slicer"><span>Account</span>All</div>
+    <div class="slicer"><span>Campaign Objective</span>All</div>
+  </div>
+  <p class="preview-note">Filters shown as a preview. Date, platform and account slicers do not reach the campaign visuals (see the note in the campaign section).</p>
+
+  <h3 style="margin:0 0 10px;font-size:16px">Audience</h3>
+  <div class="kpis">
+    <div class="card"><div class="kpi-label">Total Followers Gained</div><div class="kpi-value">174,357</div><div class="kpi-hint">All accounts, 24 months</div></div>
+    <div class="card"><div class="kpi-label">Total Followers Lost</div><div class="kpi-value">43,528</div><div class="kpi-hint">All accounts, 24 months</div></div>
+    <div class="card"><div class="kpi-label">Net Follower Growth</div><div class="kpi-value pos">+130,829</div><div class="kpi-hint">Gained minus lost</div></div>
+    <div class="card"><div class="kpi-label">Average Followers End</div><div class="kpi-value">36,692</div><div class="kpi-hint">Per account-month</div></div>
+  </div>
+  <div class="charts">
+    <div class="card full">
+      <h3>Followers Gained vs Lost Over Time</h3>
+      <p class="note">Total Followers Gained and Total Followers Lost by month</p>
+      <div class="chart-box"><canvas id="p3GainLoss"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Net Follower Growth Trend</h3>
+      <p class="note">Net Follower Growth by month</p>
+      <div class="chart-box"><canvas id="p3NetTrend"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Audience Growth by Account</h3>
+      <p class="note">Net Follower Growth by account</p>
+      <div class="chart-box"><canvas id="p3Account"></canvas></div>
+    </div>
+  </div>
+
+  <h3 style="margin:26px 0 10px;font-size:16px">Campaigns</h3>
+  <div class="kpis">
+    <div class="card"><div class="kpi-label">Total Campaigns</div><div class="kpi-value">30</div><div class="kpi-hint">Traffic 11 · Engagement 8 · Awareness 7 · Follower Growth 4</div></div>
+    <div class="card"><div class="kpi-label">Total Campaign Budget</div><div class="kpi-value">$1.81M</div><div class="kpi-hint">$1,813,503</div></div>
+    <div class="card"><div class="kpi-label">Average Campaign Budget</div><div class="kpi-value">$60,450</div><div class="kpi-hint">Per campaign</div></div>
+    <div class="card"><div class="kpi-label">Average Campaign Duration</div><div class="kpi-value">18.2 days</div><div class="kpi-hint">Start to end date</div></div>
+  </div>
+  <div class="charts">
+    <div class="card">
+      <h3>Campaign Budget by Objective</h3>
+      <p class="note">Total Campaign Budget by objective</p>
+      <div class="chart-box"><canvas id="p3Budget"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Campaign Distribution by Platform</h3>
+      <p class="note">Total Campaigns by platform (campaign's own platform label)</p>
+      <div class="chart-box"><canvas id="p3Donut"></canvas></div>
+    </div>
+    <div class="card full">
+      <h3>Campaign Duration Analysis</h3>
+      <p class="note">Average Campaign Duration (days) by objective. In the 8 campaigns checked individually, durations range from 7 to 30 days.</p>
+      <div class="chart-box"><canvas id="p3Duration"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" id="p4">
+  <div class="page-head">
+    <h2>Key Insights &amp; Business Recommendations</h2>
+    <p class="purpose">What the data shows, and what to do about it. Every figure comes from the validated model.</p>
+  </div>
+
+  <h3 style="margin:0 0 10px;font-size:16px">Key insights</h3>
+  <div class="charts">
+    <div class="card">
+      <h3>1. Net growth slowed in 2025</h3>
+      <p class="note">Net follower growth fell from +68,272 in 2024 to +62,557 in 2025, about 8%.</p>
+      <p style="margin:0">Gross gains fell 8% (90,922 to 83,435) and losses fell 8% (22,650 to 20,878), so the slowdown is mainly weaker follower acquisition, not higher churn.</p>
+    </div>
+    <div class="card">
+      <h3>2. Carousels and reels lead</h3>
+      <p class="note">Engagement per post by content type</p>
+      <p style="margin:0">Carousels earn the most engagement per post (5,933) and the highest engagement rate (11.40%). Reels earn the most reach per post (50,913). Text posts trail on both (5,205 and 10.71%).</p>
+    </div>
+    <div class="card">
+      <h3>3. Platforms perform about the same</h3>
+      <p class="note">Engagement per post: LinkedIn 5,689 · YouTube 5,531 · Instagram 5,466</p>
+      <p style="margin:0">The gap is about 4%, and engagement rates sit between 10.9% and 11.2%. Platform choice matters less than the content format.</p>
+    </div>
+    <div class="card">
+      <h3>4. Topic gap is small</h3>
+      <p class="note">Engagement per post by topic</p>
+      <p style="margin:0">Productivity leads (5,891) and Finance trails (5,285). The spread is about 11%, so topic is a weaker lever than format.</p>
+    </div>
+    <div class="card">
+      <h3>5. Account growth varies widely</h3>
+      <p class="note">Net growth by account</p>
+      <p style="margin:0">Creator_2 (Instagram, Lifestyle) gained the most (+14,129). Creator_6 (YouTube, Lifestyle) gained the least (+8,573) and also has the lowest total engagement of the 12 accounts (511,144).</p>
+    </div>
+    <div class="card">
+      <h3>6. Campaign spend is concentrated in Traffic</h3>
+      <p class="note">Budget and linked engagement by objective</p>
+      <p style="margin:0">Traffic holds the largest budget ($637,546 across 11 campaigns) and the most linked engagement (2.31M). Follower Growth has the smallest budget ($278,906) and the least linked engagement (801,223).</p>
+    </div>
+    <div class="card">
+      <h3>7. Engagement dipped in spring 2025</h3>
+      <p class="note">Monthly engagement rate</p>
+      <p style="margin:0">The rate was lowest in May 2025 (9.95%) and highest in June 2025 (11.77%). Net growth was weakest in April 2025 (+3,442).</p>
+    </div>
+  </div>
+
+  <h3 style="margin:26px 0 10px;font-size:16px">Business recommendations</h3>
+  <div class="charts">
+    <div class="card full">
+      <h3>1. Shift more of the content mix toward carousels and reels</h3>
+      <p class="note">Priority: high · Basis: insights 2 and 4</p>
+      <p style="margin:0">Carousels and reels have the strongest engagement per post and reach per post. Text posts have the weakest on both. Run a one-quarter test that moves a share of text posts into carousels and reels, then compare engagement per post against the current mix.</p>
+    </div>
+    <div class="card full">
+      <h3>2. Find the cause of the 2025 acquisition slowdown</h3>
+      <p class="note">Priority: high · Basis: insight 1 and 7</p>
+      <p style="margin:0">Gross gains fell 8% in 2025, which is the main driver of lower net growth. Review posting cadence, topic mix and format mix for the weakest months (especially April 2025), and set a monthly follower-gain target to track against.</p>
+    </div>
+    <div class="card full">
+      <h3>3. Review the creator accounts with the weakest growth</h3>
+      <p class="note">Priority: medium · Basis: insight 5</p>
+      <p style="margin:0">Creator_6 has the lowest net growth and the lowest total engagement of the 12 accounts. Compare its format and topic mix with Creator_2, the strongest grower, before drawing conclusions about the creator itself, since the data doesn't show why the accounts differ.</p>
+    </div>
+    <div class="card full">
+      <h3>4. Track Follower Growth campaigns against follower results, not engagement</h3>
+      <p class="note">Priority: medium · Basis: insight 6</p>
+      <p style="margin:0">Follower Growth campaigns produce about 2.9 linked engagements per budget dollar, compared with 3.6 to 4.0 for the other objectives. That is a proxy, not a return measure. Judge these campaigns on followers gained, which the model doesn't yet link to campaigns.</p>
+    </div>
+    <div class="card full">
+      <h3>5. Fix the data gaps before drawing campaign conclusions</h3>
+      <p class="note">Priority: high · Basis: data checks</p>
+      <p style="margin:0">Align campaign platform with the platforms of its posts, add follower results at campaign level, confirm the budget currency, and extend the calendar beyond December 2025 to cover 2026 data.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Source: Power BI model (Fact_content_performance, Fact_audience_growth, Dim_campaigns, Dim_accounts, Dim_Date). Budgets shown in $ as formatted in the model; the source does not state a currency.
+  Data caveat: posts under a campaign are spread across all three platforms, so campaign platform is a label only and is not used to compare post performance.
+</footer>
+
+</div>
+
+<script>
+  const fmt = n => Math.round(n).toLocaleString('en-US');
+  const short = n => Math.abs(n) >= 1e6 ? (n/1e6).toFixed(1)+'M' : Math.abs(n) >= 1e3 ? (n/1e3).toFixed(0)+'K' : String(Math.round(n));
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const C = () => ({ text: css('--text'), muted: css('--muted'), border: css('--border'), accent: css('--accent'), a2: css('--accent-2'), a3: css('--accent-3'), danger: css('--danger') });
+
+  Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+  Chart.defaults.font.size = 12;
+
+  // ---- Data (validated model figures) ----
+  const months = ['2024-01','2024-02','2024-03','2024-04','2024-05','2024-06','2024-07','2024-08','2024-09','2024-10','2024-11','2024-12','2025-01','2025-02','2025-03','2025-04','2025-05','2025-06','2025-07','2025-08','2025-09','2025-10','2025-11','2025-12'];
+  const monLabels = months.map(m => { const [y, mo] = m.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo-1] + ' ' + y.slice(2); });
+  const monthlyPosts = [50,38,66,56,45,39,46,56,38,42,57,54,61,39,51,52,44,59,50,51,55,39,57,55];
+  const monthlyReach = [2513554,2129210,3370117,2817079,2369065,1863364,2600872,2731875,1962638,1872766,2902716,2482623,3167128,1902086,2492266,2914616,2184819,2916850,2180237,2684311,3030856,2103693,2483683,2296867];
+  const monthlyEng = [285660,242837,373402,314073,239374,221827,275192,312621,214778,223680,305050,271437,367962,225527,283644,339752,217150,338901,252758,292248,306524,226663,271391,267392];
+  const monthlyGained = [6903,6301,8418,9411,7310,8437,7240,7112,7339,7153,8127,7171,6955,6237,6080,5091,7644,7786,7979,7707,6720,6949,7673,6614];
+  const monthlyLost = [2080,2023,1734,2154,1446,2111,1800,1503,1939,2206,2004,1650,1761,1214,1488,1649,2065,1974,1666,1595,1641,2059,1802,1964];
+  const monthlyNet = monthlyGained.map((g, i) => g - monthlyLost[i]);
+  const monthlyEngPerPost = monthlyEng.map((e, i) => e / monthlyPosts[i]);
+
+  const p = C();
+  const base = () => ({
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: p.text, boxWidth: 12 } } },
+    scales: { x: { ticks: { color: p.muted }, grid: { color: p.border } }, y: { ticks: { color: p.muted }, grid: { color: p.border }, beginAtZero: true } }
+  });
+  const noLegend = o => { o.plugins.legend.display = false; return o; };
+  const hbar = o => { o.indexAxis = 'y'; return o; };
+  const rightAxis = (o, cb) => { o.scales.y1 = { position: 'right', beginAtZero: true, ticks: { color: p.muted, callback: cb }, grid: { drawOnChartArea: false } }; return o; };
+
+  // ---- Page 1 ----
+  new Chart(document.getElementById('p1Trend'), {
+    type: 'line',
+    data: { labels: monLabels, datasets: [
+      { label: 'Total Reach', data: monthlyReach, borderColor: p.accent, backgroundColor: p.accent, tension: .3, yAxisID: 'y' },
+      { label: 'Total Engagement', data: monthlyEng, borderColor: p.a2, backgroundColor: p.a2, tension: .3, yAxisID: 'y1' }
+    ]},
+    options: rightAxis((() => { const o = base(); o.scales.y.ticks.callback = short; return o; })(), short)
+  });
+  new Chart(document.getElementById('p1Platform'), {
+    type: 'bar',
+    data: { labels: ['Instagram','LinkedIn','YouTube'], datasets: [{ label: 'Total Reach', data: [20754154, 19707334, 19511803], backgroundColor: [p.accent, p.a2, p.a3], borderRadius: 6 }] },
+    options: (() => { const o = noLegend(base()); o.scales.y.ticks.callback = short; return o; })()
+  });
+  new Chart(document.getElementById('p1ContentType'), {
+    type: 'bar',
+    data: { labels: ['Reel','Video','Image','Carousel','Text'], datasets: [{ label: 'Total Engagement', data: [1516712, 1312024, 1349064, 1305242, 1186801], backgroundColor: p.accent, borderRadius: 6 }] },
+    options: (() => { const o = noLegend(base()); o.scales.y.ticks.callback = short; return o; })()
+  });
+  new Chart(document.getElementById('p1Growth'), {
+    type: 'line',
+    data: { labels: monLabels, datasets: [{ label: 'Net Follower Growth', data: monthlyNet, borderColor: p.accent, backgroundColor: p.accent, tension: .3, fill: true }] },
+    options: (() => { const o = base(); o.scales.y.ticks.callback = v => fmt(v); return o; })()
+  });
+
+  // ---- Page 2 ----
+  new Chart(document.getElementById('p2Reach'), {
+    type: 'bar',
+    data: { labels: ['Reel','Video','Carousel','Image','Text'], datasets: [{ label: 'Total Reach', data: [13441109, 12068935, 11274651, 11996635, 11191961], backgroundColor: p.accent, borderRadius: 6 }] },
+    options: (() => { const o = hbar(noLegend(base())); o.scales.x.ticks.callback = short; o.scales.x.beginAtZero = true; return o; })()
+  });
+  new Chart(document.getElementById('p2Engagement'), {
+    type: 'bar',
+    data: { labels: ['Reel','Image','Video','Carousel','Text'], datasets: [{ label: 'Total Engagement', data: [1516712, 1349064, 1312024, 1305242, 1186801], backgroundColor: p.a2, borderRadius: 6 }] },
+    options: (() => { const o = noLegend(base()); o.scales.y.ticks.callback = short; return o; })()
+  });
+  new Chart(document.getElementById('p2Topic'), {
+    type: 'bar',
+    data: { labels: ['Career','Productivity','Education','Finance','AI','Data Analytics'], datasets: [{ label: 'Total Engagement', data: [1219061, 1101629, 1191553, 1051752, 1072624, 1033224], backgroundColor: p.a3, borderRadius: 6 }] },
+    options: (() => { const o = hbar(noLegend(base())); o.scales.x.ticks.callback = short; o.scales.x.beginAtZero = true; return o; })()
+  });
+  new Chart(document.getElementById('p2Quality'), {
+    type: 'line',
+    data: { labels: monLabels, datasets: [{ label: 'Avg Engagement per Post', data: monthlyEngPerPost, borderColor: p.accent, backgroundColor: p.accent, tension: .3 }] },
+    options: (() => { const o = base(); o.scales.y.ticks.callback = v => fmt(v); return o; })()
+  });
+
+  // ---- Page 3 ----
+  new Chart(document.getElementById('p3GainLoss'), {
+    type: 'bar',
+    data: { labels: monLabels, datasets: [
+      { label: 'Total Followers Gained', data: monthlyGained, backgroundColor: p.a2, borderRadius: 4 },
+      { label: 'Total Followers Lost', data: monthlyLost, backgroundColor: p.danger, borderRadius: 4 }
+    ]},
+    options: (() => { const o = base(); o.scales.y.ticks.callback = v => fmt(v); return o; })()
+  });
+  new Chart(document.getElementById('p3NetTrend'), {
+    type: 'line',
+    data: { labels: monLabels, datasets: [{ label: 'Net Follower Growth', data: monthlyNet, borderColor: p.accent, backgroundColor: p.accent, tension: .3, fill: true }] },
+    options: (() => { const o = base(); o.scales.y.ticks.callback = v => fmt(v); return o; })()
+  });
+  new Chart(document.getElementById('p3Account'), {
+    type: 'bar',
+    data: { labels: ['Creator_2','Creator_7','Creator_5','Creator_12','Creator_11','Creator_8','Creator_4','Creator_1','Creator_10','Creator_3','Creator_9','Creator_6'],
+      datasets: [{ label: 'Net Follower Growth', data: [14129,12541,12171,11542,11416,11363,10411,10150,10145,9262,9126,8573], backgroundColor: p.accent, borderRadius: 6 }] },
+    options: (() => { const o = hbar(noLegend(base())); o.scales.x.ticks.callback = v => fmt(v); return o; })()
+  });
+  new Chart(document.getElementById('p3Budget'), {
+    type: 'bar',
+    data: { labels: ['Traffic','Engagement','Awareness','Follower Growth'], datasets: [{ label: 'Total Campaign Budget', data: [637546, 484971, 412080, 278906], backgroundColor: p.a3, borderRadius: 6 }] },
+    options: (() => { const o = noLegend(base()); o.scales.y.ticks.callback = v => '$' + short(v); return o; })()
+  });
+  new Chart(document.getElementById('p3Donut'), {
+    type: 'doughnut',
+    data: { labels: ['LinkedIn','YouTube','Instagram'], datasets: [{ label: 'Total Campaigns', data: [12, 11, 7], backgroundColor: [p.accent, p.a2, p.a3], borderWidth: 0 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { color: p.text } } } }
+  });
+  new Chart(document.getElementById('p3Duration'), {
+    type: 'bar',
+    data: { labels: ['Traffic','Engagement','Awareness','Follower Growth'], datasets: [{ label: 'Average Campaign Duration (days)', data: [22.5, 12.4, 19.7, 15.8], backgroundColor: p.accent, borderRadius: 6 }] },
+    options: (() => { const o = noLegend(base()); o.scales.y.ticks.callback = v => v + ' d'; return o; })()
+  });
+
+  // ---- Tab switching ----
+  document.querySelectorAll('nav.tabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.page).classList.add('active');
+      window.dispatchEvent(new Event('resize'));
+    });
+  });
+</script>
+</body>
+</html>
